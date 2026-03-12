@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>REST SPACE KL — QR</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;800;900&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'Outfit', sans-serif;
+  background: #f5f5f7;
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 32px 20px; gap: 24px;
+}
+.logo { font-size: 12px; font-weight: 700; letter-spacing: .2em; color: #86868b; }
+.logo span { color: #34c759; }
+
+.card {
+  background: #fff;
+  border-radius: 28px;
+  padding: 36px 28px;
+  display: flex; flex-direction: column;
+  align-items: center; gap: 22px;
+  box-shadow: 0 8px 40px rgba(0,0,0,.1);
+  max-width: 320px; width: 100%;
+  border: 1px solid #e5e5ea;
+}
+.title { font-size: 24px; font-weight: 900; text-align: center; line-height: 1.2; letter-spacing: -.5px; }
+.title em { color: #007aff; font-style: normal; }
+
+.qr-wrap {
+  background: #fff; padding: 14px;
+  border-radius: 20px;
+  border: 2px solid #007aff;
+  box-shadow: 0 0 0 6px rgba(0,122,255,.08);
+}
+
+.url-box {
+  font-size: 10px; font-family: monospace;
+  color: #86868b; text-align: center;
+  background: #f5f5f7; padding: 7px 14px;
+  border-radius: 100px; border: 1px solid #e5e5ea;
+  word-break: break-all; max-width: 260px;
+}
+
+.hint { font-size: 13px; color: #86868b; text-align: center; line-height: 1.6; }
+
+.open-btn {
+  display: block; width: 100%; padding: 15px;
+  background: #007aff; color: #fff;
+  border: none; border-radius: 16px;
+  font-size: 16px; font-weight: 800;
+  cursor: pointer; font-family: inherit;
+  text-decoration: none; text-align: center;
+  box-shadow: 0 4px 20px rgba(0,122,255,.3);
+  transition: transform .12s;
+}
+.open-btn:active { transform: scale(.97); }
+
+.features {
+  display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
+}
+.feat {
+  background: #f5f5f7; border: 1px solid #e5e5ea;
+  border-radius: 100px; padding: 5px 12px;
+  font-size: 11px; font-weight: 600; color: #3a3a3c;
+}
+
+@media print {
+  body { background: #fff; }
+  .open-btn { display: none; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+</style>
+</head>
+<body>
+
+<div class="logo">REST <span>SPACE</span> KL</div>
+
+<div class="card">
+  <div class="title">今すぐ<br><em>予約 · チェックイン</em></div>
+
+  <div class="qr-wrap">
+    <div id="qr"></div>
+  </div>
+
+  <div class="url-box">ainadevelop.github.io/restspace-kl/guest_app_v5.html</div>
+
+  <div class="features">
+    <div class="feat">🇬🇧 EN</div>
+    <div class="feat">🇯🇵 日本語</div>
+    <div class="feat">🇲🇾 BM</div>
+    <div class="feat">🇨🇳 中文</div>
+    <div class="feat">🇸🇦 عربي</div>
+  </div>
+
+  <div class="hint">
+    📱 カメラでスキャン<br>
+    座席予約 · チェックイン · タイマー
+  </div>
+
+  <a class="open-btn" href="https://ainadevelop.github.io/restspace-kl/guest_app_v5.html" target="_blank">
+    🚀 アプリを開く
+  </a>
+</div>
+
+<script>
+new QRCode(document.getElementById('qr'), {
+  text: 'https://ainadevelop.github.io/restspace-kl/guest_app_v5.html',
+  width: 220, height: 220,
+  colorDark: '#1d1d1f',
+  colorLight: '#ffffff',
+  correctLevel: QRCode.CorrectLevel.H
+});
+</script>
+</body>
+</html>
