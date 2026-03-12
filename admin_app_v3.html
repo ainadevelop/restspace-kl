@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>REST SPACE — Ops</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:   #070809;
+  --dark:  #0c0e10;
+  --card:  #111416;
+  --card2: #181c1f;
+  --rim:   #1e2227;
+  --rim2:  #252c32;
+  --green: #00e87a;
+  --gdim:  rgba(0,232,122,.1);
+  --g2:    rgba(0,232,122,.04);
+  --amber: #ffb340;
+  --adim:  rgba(255,179,64,.1);
+  --red:   #ff4d5e;
+  --rdim:  rgba(255,77,94,.1);
+  --blue:  #4db8ff;
+  --bdim:  rgba(77,184,255,.1);
+  --white: #eef0f3;
+  --mid:   #6b7480;
+  --dim:   #2a3038;
+}
+
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{
+  font-family:'DM Sans','Noto Sans JP',sans-serif;
+  background:var(--ink);color:var(--white);
+  min-height:100vh;padding-bottom:72px;
+  font-size:14px;
+}
+
+/* ─── TOPBAR ─── */
+.topbar{
+  height:52px;
+  background:var(--dark);
+  border-bottom:1px solid var(--rim);
+  display:flex;align-items:center;
+  padding:0 14px;gap:10px;
+  position:sticky;top:0;z-index:200;
+}
+.topbar-brand{
+  font-size:13px;font-weight:800;letter-spacing:.04em;
+  color:var(--white); flex:1;
+}
+.topbar-brand span{color:var(--green)}
+.live-indicator{
+  display:flex;align-items:center;gap:5px;
+  font-size:10px;font-weight:700;
+  color:var(--green);letter-spacing:.08em;
+  background:var(--gdim);
+  border:1px solid rgba(0,232,122,.2);
+  padding:4px 10px;border-radius:6px;
+}
+.li-dot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:p 1.5s infinite}
+@keyframes p{0%,100%{opacity:1}50%{opacity:.3}}
+.topbar-clock{
+  font-family:'DM Mono',monospace;
+  font-size:12px;color:var(--mid);font-weight:500;
+}
+
+/* ─── METRIC STRIP ─── */
+.metric-strip{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:1px;background:var(--rim);
+  border-bottom:1px solid var(--rim);
+}
+.metric-cell{
+  background:var(--dark);
+  padding:10px 10px 12px;
+  position:relative;overflow:hidden;
+}
+.metric-cell::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+}
+.mc-green::after{background:var(--green)}
+.mc-amber::after{background:var(--amber)}
+.mc-red::after{background:var(--red)}
+.mc-blue::after{background:var(--blue)}
+.mv{
+  font-size:22px;font-weight:800;line-height:1;
+  font-variant-numeric:tabular-nums;
+  font-family:'DM Mono',monospace;
+}
+.mv.g{color:var(--green)}.mv.a{color:var(--amber)}.mv.r{color:var(--red)}.mv.b{color:var(--blue)}
+.ml{font-size:9px;font-weight:700;color:var(--mid);margin-top:5px;letter-spacing:.08em}
+.md{font-size:9px;font-weight:600;margin-top:2px}
+.md.up{color:var(--green)}.md.dn{color:var(--red)}.md.na{color:var(--mid)}
+
+/* ─── TAB BAR ─── */
+.tabbar{
+  display:flex;background:var(--dark);
+  border-bottom:1px solid var(--rim);
+  padding:0 14px;gap:0;
+}
+.tab{
+  padding:12px 16px;
+  font-size:12px;font-weight:700;color:var(--mid);
+  background:none;border:none;cursor:pointer;
+  font-family:inherit;position:relative;
+  transition:color .2s;
+}
+.tab::after{
+  content:'';position:absolute;
+  bottom:0;left:16px;right:16px;height:2px;
+  background:var(--green);border-radius:2px;
+  transform:scaleX(0);transition:transform .2s;
+}
+.tab.on{color:var(--white)}
+.tab.on::after{transform:scaleX(1)}
+.tab-badge{
+  display:inline-block;
+  background:var(--red);color:#fff;
+  font-size:9px;font-weight:800;
+  width:16px;height:16px;border-radius:50%;
+  line-height:16px;text-align:center;
+  margin-left:4px;vertical-align:middle;
+}
+
+/* ─── SECTION ─── */
+.sec{padding:14px 14px 0}
+.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.sh-title{font-size:14px;font-weight:800}
+.sh-meta{font-size:11px;color:var(--mid)}
+
+/* ─── SEAT MAP ─── */
+.seat-map{
+  background:var(--card);border:1px solid var(--rim);
+  border-radius:12px;overflow:hidden;
+}
+.sm-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 12px;
+  border-bottom:1px solid var(--rim);
+  background:var(--card2);
+}
+.sm-hd-l{font-size:11px;font-weight:700;color:var(--mid);letter-spacing:.08em}
+.sm-hd-r{font-size:11px;font-weight:700;color:var(--green)}
+.sm-grid{
+  display:grid;grid-template-columns:repeat(5,1fr);
+  gap:6px;padding:12px;
+}
+.sm-cell{
+  aspect-ratio:1;border-radius:10px;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:2px;
+  cursor:pointer;transition:transform .1s;
+  border:1px solid transparent;
+  position:relative;
+}
+.sm-cell:active{transform:scale(.87)}
+.sm-cell.open   {background:rgba(0,232,122,.06);  border-color:rgba(0,232,122,.15)}
+.sm-cell.taken  {background:rgba(255,77,94,.06);   border-color:rgba(255,77,94,.15)}
+.sm-cell.prayer {background:rgba(77,184,255,.06);  border-color:rgba(77,184,255,.15)}
+.sm-cell.clean  {background:rgba(255,179,64,.06);  border-color:rgba(255,179,64,.15)}
+.sm-cell.urg    {animation:urgPulse 1s ease-in-out infinite}
+@keyframes urgPulse{0%,100%{border-color:rgba(255,77,94,.4)}50%{border-color:rgba(255,77,94,.9)}}
+.sm-ico{font-size:16px}
+.sm-num{font-size:8px;font-weight:700;font-family:'DM Mono',monospace}
+.open   .sm-num{color:var(--green)}
+.taken  .sm-num{color:var(--red)}
+.prayer .sm-num{color:var(--blue)}
+.clean  .sm-num{color:var(--amber)}
+.sm-time{font-size:7px;font-weight:700;font-family:'DM Mono',monospace}
+.taken  .sm-time{color:#ff8090}
+.sm-cell.urg .sm-time{color:var(--red)}
+.sm-legend{
+  display:flex;gap:10px;padding:8px 12px;
+  border-top:1px solid var(--rim);
+  background:var(--card2);flex-wrap:wrap;
+}
+.sm-leg{display:flex;align-items:center;gap:4px;font-size:9px;color:var(--mid)}
+.sm-pip{width:5px;height:5px;border-radius:50%}
+
+/* ─── CHART ─── */
+.chart-card{
+  background:var(--card);border:1px solid var(--rim);
+  border-radius:12px;overflow:hidden;
+}
+.chart-hd{
+  padding:10px 12px;background:var(--card2);
+  border-bottom:1px solid var(--rim);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.chart-hd-l{font-size:11px;font-weight:700;color:var(--mid);letter-spacing:.08em}
+.chart-hd-r{font-size:16px;font-weight:800;color:var(--green);font-family:'DM Mono',monospace}
+.chart-body{padding:14px 12px 10px}
+.bars{
+  display:flex;align-items:flex-end;gap:4px;height:72px;margin-bottom:5px;
+}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
+.bar{
+  width:100%;border-radius:3px 3px 0 0;min-height:2px;
+  background:var(--dim);
+}
+.bar.today{background:linear-gradient(180deg,var(--green),rgba(0,232,122,.2))}
+.bar-val{font-size:7px;font-weight:700;color:var(--mid);font-family:'DM Mono',monospace}
+.bar-val.today-val{color:var(--green)}
+.bar-day{font-size:8px;font-weight:700;color:var(--mid)}
+.bar-day.today-day{color:var(--green)}
+
+/* ─── ALERTS ─── */
+.alert-list{display:flex;flex-direction:column;gap:6px}
+.alert{
+  border-radius:10px;padding:11px 12px;
+  display:flex;align-items:flex-start;gap:10px;
+}
+.al-r{background:var(--rdim);border:1px solid rgba(255,77,94,.2)}
+.al-a{background:var(--adim);border:1px solid rgba(255,179,64,.2)}
+.al-b{background:var(--bdim);border:1px solid rgba(77,184,255,.2)}
+.al-g{background:var(--gdim);border:1px solid rgba(0,232,122,.2)}
+.alert-ico{font-size:16px;flex-shrink:0;margin-top:1px}
+.alert-body{}
+.alert-title{font-size:12px;font-weight:700}
+.al-r .alert-title{color:var(--red)}
+.al-a .alert-title{color:var(--amber)}
+.al-b .alert-title{color:var(--blue)}
+.al-g .alert-title{color:var(--green)}
+.alert-sub{font-size:10px;color:var(--mid);margin-top:2px;line-height:1.4}
+
+/* ─── SESSION LIST ─── */
+.sess-list{display:flex;flex-direction:column;gap:6px}
+.sess{
+  background:var(--card);border:1px solid var(--rim);
+  border-radius:10px;padding:11px 12px;
+  display:flex;align-items:center;gap:10px;
+  cursor:pointer;transition:border-color .15s;
+}
+.sess:hover{border-color:var(--rim2)}
+.sess.urg{border-color:rgba(255,77,94,.4)!important}
+.sess-badge{
+  width:34px;height:34px;border-radius:9px;
+  background:var(--card2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:800;flex-shrink:0;
+  font-family:'DM Mono',monospace;
+}
+.sess-badge.g{color:var(--green)}.sess-badge.b{color:var(--blue)}
+.sess-info{flex:1;min-width:0}
+.sess-id{font-size:12px;font-weight:700;font-family:'DM Mono',monospace}
+.sess-meta{font-size:10px;color:var(--mid);margin-top:2px}
+.sess-right{text-align:right;flex-shrink:0}
+.sess-time{
+  font-size:14px;font-weight:800;
+  font-family:'DM Mono',monospace;
+}
+.sess-time.g{color:var(--green)}.sess-time.a{color:var(--amber)}.sess-time.r{color:var(--red)}
+.sess-tag{
+  font-size:8px;font-weight:800;padding:2px 7px;border-radius:4px;
+  margin-top:3px;display:inline-block;letter-spacing:.04em;
+}
+.st-g{background:var(--gdim);color:var(--green)}
+.st-a{background:var(--adim);color:var(--amber)}
+.st-r{background:var(--rdim);color:var(--red)}
+
+/* ─── ACTIONS ─── */
+.act-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.act{
+  background:var(--card);border:1px solid var(--rim);
+  border-radius:12px;padding:14px 8px;
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  cursor:pointer;font-family:inherit;
+  transition:all .15s;
+}
+.act:active{transform:scale(.92)}
+.act.primary{
+  background:var(--green);border-color:var(--green);
+  box-shadow:0 0 24px rgba(0,232,122,.2);
+}
+.act.primary .act-lbl{color:#000}
+.act-ico{font-size:22px}
+.act-lbl{font-size:10px;font-weight:700;color:var(--white);text-align:center;line-height:1.3}
+
+/* ─── TOGGLES ─── */
+.tog-card{
+  background:var(--card);border:1px solid var(--rim);
+  border-radius:12px;overflow:hidden;
+}
+.tog-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:13px 12px;border-bottom:1px solid var(--rim);
+}
+.tog-row:last-child{border-bottom:none}
+.tog-left{}
+.tog-name{font-size:13px;font-weight:600}
+.tog-sub{font-size:10px;color:var(--mid);margin-top:2px}
+.tog{
+  width:42px;height:24px;border-radius:12px;
+  background:var(--rim2);border:none;cursor:pointer;
+  position:relative;transition:background .2s;flex-shrink:0;
+}
+.tog.on{background:var(--green)}
+.tog::after{
+  content:'';position:absolute;top:3px;left:3px;
+  width:18px;height:18px;border-radius:50%;background:#fff;
+  transition:left .2s;box-shadow:0 1px 4px rgba(0,0,0,.3);
+}
+.tog.on::after{left:21px}
+
+/* ─── BOTTOM NAV ─── */
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;z-index:200;
+  background:rgba(7,8,9,.97);
+  backdrop-filter:blur(16px);
+  border-top:1px solid var(--rim);
+  display:flex;padding:6px 0 8px;
+}
+.nb{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+  font-size:9px;font-weight:700;letter-spacing:.04em;
+  color:var(--mid);background:none;border:none;
+  cursor:pointer;font-family:inherit;transition:color .2s;padding:4px 0;
+}
+.nb.on{color:var(--green)}
+.nb-ico{font-size:20px}
+
+/* ─── TAB SCREENS ─── */
+.tscreen{display:none}
+.tscreen.on{display:block}
+
+/* ─── TOAST ─── */
+#toast{
+  position:fixed;bottom:82px;left:50%;
+  transform:translateX(-50%) translateY(8px);
+  background:var(--card2);border:1px solid var(--rim2);
+  color:var(--white);font-size:12px;font-weight:600;
+  padding:8px 18px;border-radius:8px;
+  opacity:0;transition:all .2s;
+  pointer-events:none;white-space:nowrap;z-index:999;
+  font-family:'DM Sans',sans-serif;
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-brand">REST<span> SPACE</span> OPS</div>
+  <div class="live-indicator"><div class="li-dot"></div>LIVE</div>
+  <div class="topbar-clock" id="clock">--:--:--</div>
+</div>
+
+<!-- METRICS -->
+<div class="metric-strip">
+  <div class="metric-cell mc-green">
+    <div class="mv g">8<span style="font-size:13px;color:var(--mid)">/10</span></div>
+    <div class="ml">IN USE</div>
+    <div class="md up">▲ 80%</div>
+  </div>
+  <div class="metric-cell mc-amber">
+    <div class="mv a" id="revNum">270</div>
+    <div class="ml">REV (RM)</div>
+    <div class="md up">▲ +12%</div>
+  </div>
+  <div class="metric-cell mc-blue">
+    <div class="mv b">34</div>
+    <div class="ml">GUESTS</div>
+    <div class="md na">peak 14h</div>
+  </div>
+  <div class="metric-cell mc-red">
+    <div class="mv r">2</div>
+    <div class="ml">EXPIRING</div>
+    <div class="md dn">⚠ #3 · #7</div>
+  </div>
+</div>
+
+<!-- TAB BAR -->
+<div class="tabbar">
+  <button class="tab on" id="tab-dash" onclick="goTab('dash')">ダッシュ</button>
+  <button class="tab" id="tab-sess" onclick="goTab('sess')">セッション <span class="tab-badge">8</span></button>
+  <button class="tab" id="tab-ctrl" onclick="goTab('ctrl')">操作</button>
+</div>
+
+<!-- ═══ DASHBOARD ═══ -->
+<div id="t-dash" class="tscreen on">
+
+  <div class="sec">
+    <div class="sh">
+      <div class="sh-title">座席マップ</div>
+      <div class="sh-meta" id="seatSummary">空き2 · 使用中8</div>
+    </div>
+    <div class="seat-map">
+      <div class="sm-header">
+        <div class="sm-hd-l">FLOOR PLAN — 1F</div>
+        <div class="sm-hd-r">80% OCCUPIED</div>
+      </div>
+      <div class="sm-grid" id="seatGrid"></div>
+      <div class="sm-legend">
+        <div class="sm-leg"><div class="sm-pip" style="background:var(--green)"></div>空き</div>
+        <div class="sm-leg"><div class="sm-pip" style="background:var(--red)"></div>使用中</div>
+        <div class="sm-leg"><div class="sm-pip" style="background:var(--blue)"></div>礼拝室</div>
+        <div class="sm-leg"><div class="sm-pip" style="background:var(--amber)"></div>清掃中</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sh"><div class="sh-title">今週の売上</div></div>
+    <div class="chart-card">
+      <div class="chart-hd">
+        <div class="chart-hd-l">WEEKLY REVENUE</div>
+        <div class="chart-hd-r">RM 1,665</div>
+      </div>
+      <div class="chart-body">
+        <div class="bars" id="chartBars"></div>
+        <div id="chartDays" style="display:flex;gap:4px"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sh">
+      <div class="sh-title">アラート</div>
+      <div style="background:var(--rdim);color:var(--red);font-size:9px;font-weight:800;padding:3px 9px;border-radius:4px;letter-spacing:.06em">3 ACTIVE</div>
+    </div>
+    <div class="alert-list">
+      <div class="alert al-r">
+        <div class="alert-ico">⏰</div>
+        <div class="alert-body">
+          <div class="alert-title">時間切れ警告 — #3 · #7</div>
+          <div class="alert-sub">残り15分以内に時間切れ。延長またはチェックアウト処理が必要</div>
+        </div>
+      </div>
+      <div class="alert al-a">
+        <div class="alert-ico">☕</div>
+        <div class="alert-body">
+          <div class="alert-title">ホットドリンク残量少</div>
+          <div class="alert-sub">現在の残量が30%以下。補充を推奨</div>
+        </div>
+      </div>
+      <div class="alert al-b">
+        <div class="alert-ico">🕌</div>
+        <div class="alert-body">
+          <div class="alert-title">礼拝時間 — Asar 16:22</div>
+          <div class="alert-sub">礼拝室の空き確認済み。予約受付中</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="height:14px"></div>
+</div>
+
+<!-- ═══ SESSIONS ═══ -->
+<div id="t-sess" class="tscreen">
+  <div class="sec" style="padding-top:14px">
+    <div class="sh">
+      <div class="sh-title">アクティブセッション</div>
+      <div class="sh-meta">8件使用中</div>
+    </div>
+    <div class="sess-list" id="sessList"></div>
+  </div>
+  <div style="height:14px"></div>
+</div>
+
+<!-- ═══ CONTROL ═══ -->
+<div id="t-ctrl" class="tscreen">
+  <div class="sec" style="padding-top:14px">
+    <div class="sh"><div class="sh-title">クイックアクション</div></div>
+    <div class="act-grid">
+      <button class="act primary" onclick="showToast('QRコード発行完了')">
+        <div class="act-ico">📲</div>
+        <div class="act-lbl">QRコード発行</div>
+      </button>
+      <button class="act" onclick="showToast('座席を閉鎖しました')">
+        <div class="act-ico">🚫</div>
+        <div class="act-lbl">座席を閉鎖</div>
+      </button>
+      <button class="act" onclick="showToast('時間を延長しました')">
+        <div class="act-ico">⏱</div>
+        <div class="act-lbl">時間延長</div>
+      </button>
+      <button class="act" onclick="showToast('清掃モード ON')">
+        <div class="act-ico">🧹</div>
+        <div class="act-lbl">清掃モード</div>
+      </button>
+      <button class="act" onclick="showToast('レポートを出力中...')">
+        <div class="act-ico">📊</div>
+        <div class="act-lbl">売上レポート</div>
+      </button>
+      <button class="act" onclick="showToast('全席に通知を送信')">
+        <div class="act-ico">📢</div>
+        <div class="act-lbl">全席通知</div>
+      </button>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sh"><div class="sh-title">店舗設定</div></div>
+    <div class="tog-card">
+      <div class="tog-row">
+        <div class="tog-left"><div class="tog-name">営業中</div><div class="tog-sub">現在：オープン</div></div>
+        <button class="tog on" onclick="this.classList.toggle('on')"></button>
+      </div>
+      <div class="tog-row">
+        <div class="tog-left"><div class="tog-name">自動延長許可</div><div class="tog-sub">空席があれば +1h 自動許可</div></div>
+        <button class="tog on" onclick="this.classList.toggle('on')"></button>
+      </div>
+      <div class="tog-row">
+        <div class="tog-left"><div class="tog-name">礼拝室優先予約</div><div class="tog-sub">ムスリム向け先行予約</div></div>
+        <button class="tog on" onclick="this.classList.toggle('on')"></button>
+      </div>
+      <div class="tog-row">
+        <div class="tog-left"><div class="tog-name">飲料補充アラート</div><div class="tog-sub">残量30%以下で通知</div></div>
+        <button class="tog" onclick="this.classList.toggle('on')"></button>
+      </div>
+    </div>
+  </div>
+  <div style="height:14px"></div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="nb on" id="nb-dash" onclick="goNav('dash')">
+    <div class="nb-ico">📊</div>ダッシュ
+  </button>
+  <button class="nb" id="nb-sess" onclick="goNav('sess')">
+    <div class="nb-ico">👥</div>セッション
+  </button>
+  <button class="nb" id="nb-ctrl" onclick="goNav('ctrl')">
+    <div class="nb-ico">⚙️</div>操作
+  </button>
+</nav>
+
+<div id="toast"></div>
+
+<script>
+/* ── CLOCK ─────────────────────────────── */
+function tick(){
+  document.getElementById('clock').textContent=new Date().toLocaleTimeString('ja-JP');
+}
+tick();setInterval(tick,1000);
+
+/* ── SEATS ─────────────────────────────── */
+const seats=[
+  {n:1,t:'taken',time:'1:22'},{n:2,t:'open'},
+  {n:3,t:'taken',time:'0:11',urg:true},{n:4,t:'taken',time:'2:10'},
+  {n:5,t:'prayer',time:'0:45'},{n:6,t:'open'},
+  {n:7,t:'taken',time:'0:07',urg:true},{n:8,t:'taken',time:'1:55'},
+  {n:9,t:'clean'},{n:10,t:'open'}
+];
+const ico={taken:'🔴',open:'🪑',prayer:'🕌',clean:'🧹'};
+const lbl={taken:'使用中',open:'空き',prayer:'礼拝',clean:'清掃'};
+
+document.getElementById('seatGrid').innerHTML=seats.map(s=>`
+  <div class="sm-cell ${s.t}${s.urg?' urg':''}" onclick="onSeat(${s.n})">
+    <div class="sm-ico">${ico[s.t]||'🪑'}</div>
+    <div class="sm-num">#${s.n}</div>
+    <div class="sm-time">${s.urg?'⚠'+s.time:(s.time||lbl[s.t])}</div>
+  </div>`).join('');
+
+/* ── CHART ─────────────────────────────── */
+const rv=[210,180,240,195,260,310,270],mx=Math.max(...rv);
+const days=['月','火','水','木','金','土','今'];
+document.getElementById('chartBars').innerHTML=rv.map((v,i)=>{
+  const h=Math.round((v/mx)*68),td=i===6;
+  return `<div class="bar-col">
+    <div class="bar-val${td?' today-val':''}">${v}</div>
+    <div class="bar${td?' today':''}" style="height:${h}px"></div>
+  </div>`;
+}).join('');
+document.getElementById('chartDays').innerHTML=days.map((d,i)=>
+  `<div style="flex:1;text-align:center" class="bar-day${i===6?' today-day':''}">${d}</div>`
+).join('');
+
+/* ── SESSIONS ─────────────────────────── */
+const active=seats.filter(s=>s.t==='taken'||s.t==='prayer');
+document.getElementById('sessList').innerHTML=active.map(s=>{
+  const parts=s.time?s.time.split(':'):[0,0];
+  const mins=parseInt(parts[0])*60+parseInt(parts[1]);
+  const cls=s.urg?'r':mins<30?'a':'g';
+  const tagCls=s.urg?'st-r':mins<30?'st-a':'st-g';
+  const tagTxt=s.urg?'⚠ 緊急':mins<30?'注意':'通常';
+  const isPrayer=s.t==='prayer';
+  return `<div class="sess${s.urg?' urg':''}" onclick="onSeat(${s.n})">
+    <div class="sess-badge ${isPrayer?'b':'g'}">${s.n}</div>
+    <div class="sess-info">
+      <div class="sess-id">KL-${1000+s.n}</div>
+      <div class="sess-meta">${isPrayer?'礼拝室':'一般席'} · チェックイン済み</div>
+    </div>
+    <div class="sess-right">
+      <div class="sess-time ${cls}">${s.time||'–'}</div>
+      <div class="sess-tag ${tagCls}">${tagTxt}</div>
+    </div>
+  </div>`;
+}).join('');
+
+/* ── EVENTS ────────────────────────────── */
+function onSeat(n){
+  const s=seats.find(x=>x.n===n);
+  if(s.t==='open') showToast(`席 #${n} — QRコード発行 · メンテナンス設定`);
+  else if(s.t==='taken') showToast(`席 #${n} — 時間延長 · チェックアウト強制`);
+  else if(s.t==='prayer') showToast(`礼拝室 #${n} — 礼拝時間確認`);
+  else showToast(`席 #${n} — 清掃完了マーク`);
+}
+
+function goTab(name){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.tscreen').forEach(t=>t.classList.remove('on'));
+  document.getElementById('tab-'+name).classList.add('on');
+  document.getElementById('t-'+name).classList.add('on');
+}
+function goNav(name){goTab(name);}
+document.querySelectorAll('.nb').forEach(b=>{
+  const id=b.id.replace('nb-','');
+  b.onclick=()=>{
+    document.querySelectorAll('.nb').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+    goTab(id);
+  };
+});
+
+let toastTmr;
+function showToast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg;
+  el.style.opacity='1';el.style.transform='translateX(-50%) translateY(0)';
+  clearTimeout(toastTmr);
+  toastTmr=setTimeout(()=>{el.style.opacity='0';el.style.transform='translateX(-50%) translateY(8px)';},2200);
+}
+
+/* ── LIVE REVENUE ──────────────────────── */
+setInterval(()=>{
+  document.getElementById('revNum').textContent=270+Math.floor(Math.random()*20-8);
+},6000);
+</script>
+</body>
+</html>

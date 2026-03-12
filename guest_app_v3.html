@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>REST SPACE KL</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,700;0,9..40,800;1,9..40,400&family=DM+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500;700&family=Noto+Sans+Arabic:wght@400;500&family=Noto+Sans+SC:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━ TOKENS ━━━━━━━━━━━━━━━━━━━━━━━━━ */
+:root {
+  --ink:    #07080a;
+  --dark:   #0d0f12;
+  --card:   #13161b;
+  --card2:  #1a1e25;
+  --rim:    #242830;
+  --green:  #00e87a;
+  --glow:   rgba(0,232,122,.18);
+  --glow2:  rgba(0,232,122,.06);
+  --amber:  #ffb340;
+  --blue:   #4db8ff;
+  --red:    #ff4d5e;
+  --white:  #f0f2f5;
+  --mid:    #8892a0;
+  --dim:    #3a4050;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━ BASE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+body {
+  font-family: 'DM Sans','Noto Sans JP',sans-serif;
+  background: var(--ink);
+  color: var(--white);
+  min-height: 100vh;
+  padding-bottom: 80px;
+  overflow-x: hidden;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━ LANG BAR ━━━━━━━━━━━━━━━━━━━━━━━━ */
+.lang-strip {
+  position: sticky; top: 0; z-index: 200;
+  background: rgba(7,8,10,.9);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--rim);
+  display: flex; align-items: center; gap: 0;
+  overflow-x: auto; scrollbar-width: none;
+  padding: 0 4px;
+}
+.lang-strip::-webkit-scrollbar { display: none; }
+.lb {
+  flex-shrink: 0;
+  padding: 11px 14px;
+  font-size: 12px; font-weight: 600;
+  color: var(--mid);
+  background: none; border: none;
+  cursor: pointer; font-family: inherit;
+  transition: color .2s;
+  position: relative;
+}
+.lb::after {
+  content: ''; position: absolute;
+  bottom: 0; left: 14px; right: 14px; height: 2px;
+  background: var(--green); border-radius: 2px;
+  transform: scaleX(0); transition: transform .2s;
+}
+.lb.on { color: var(--white); }
+.lb.on::after { transform: scaleX(1); }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━ HERO ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.hero {
+  position: relative; height: 260px;
+  overflow: hidden; background: var(--dark);
+}
+
+/* Animated city skyline via CSS */
+.skyline {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: 130px;
+  display: flex; align-items: flex-end; gap: 3px;
+  padding: 0 8px;
+}
+.bld {
+  background: #0f1218;
+  border-radius: 2px 2px 0 0;
+  position: relative; flex-shrink: 0;
+}
+.bld::before { /* window lights */
+  content: '';
+  position: absolute; inset: 6px 4px;
+  background-image:
+    radial-gradient(circle, rgba(255,179,64,.6) 1px, transparent 1px),
+    radial-gradient(circle, rgba(77,184,255,.5) 1px, transparent 1px);
+  background-size: 6px 8px, 6px 8px;
+  background-position: 0 0, 3px 4px;
+}
+
+/* Gradient sky */
+.sky {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 30% 60%, rgba(0,232,122,.08) 0%, transparent 60%),
+              radial-gradient(ellipse at 75% 40%, rgba(77,184,255,.06) 0%, transparent 50%),
+              linear-gradient(180deg, #04060a 0%, #0b0e14 60%, #10141c 100%);
+}
+
+/* Glowing beacon */
+.beacon {
+  position: absolute; left: 50%; top: 42%;
+  transform: translate(-50%, -50%);
+}
+.beacon-ring {
+  position: absolute; border-radius: 50%;
+  border: 1px solid var(--green);
+  animation: expand 2.4s ease-out infinite;
+  top: 50%; left: 50%; transform: translate(-50%,-50%);
+}
+.beacon-ring:nth-child(2) { animation-delay: .8s; }
+.beacon-ring:nth-child(3) { animation-delay: 1.6s; }
+@keyframes expand {
+  0% { width:0; height:0; opacity:.7; }
+  100% { width:100px; height:100px; opacity:0; }
+}
+.beacon-dot {
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 0 4px rgba(0,232,122,.25), 0 0 24px rgba(0,232,122,.6);
+  position: relative; z-index: 2;
+  animation: dotPulse 2s ease-in-out infinite;
+}
+@keyframes dotPulse {
+  0%,100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+
+/* Stars */
+.stars {
+  position: absolute; inset: 0; pointer-events: none;
+}
+.star {
+  position: absolute; background: #fff; border-radius: 50%;
+  animation: twinkle var(--d,3s) ease-in-out infinite;
+}
+@keyframes twinkle { 0%,100%{opacity:.15} 50%{opacity:.8} }
+
+/* Hero overlay gradient */
+.hero-grad {
+  position: absolute; inset: 0;
+  background: linear-gradient(to bottom, transparent 40%, var(--ink) 100%);
+}
+
+/* Hero text */
+.hero-content {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 0 18px 20px;
+}
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--glow); border: 1px solid rgba(0,232,122,.3);
+  border-radius: 100px; padding: 4px 12px;
+  font-size: 11px; font-weight: 700; color: var(--green);
+  letter-spacing: .04em; margin-bottom: 8px;
+}
+.htag-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: p 1.5s infinite; }
+@keyframes p { 0%,100%{opacity:1} 50%{opacity:.3} }
+.hero-title {
+  font-size: 26px; font-weight: 800; line-height: 1.15;
+  letter-spacing: -.4px;
+}
+.hero-title span { color: var(--green); }
+.hero-subtitle {
+  font-size: 13px; color: var(--mid); margin-top: 4px;
+  font-family: 'DM Mono', monospace;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━ BODY ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.body { padding: 0 16px; }
+
+/* ━━ CHECKIN HERO CARD ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.main-cta {
+  margin-top: 16px;
+  background: var(--green);
+  border-radius: 20px;
+  padding: 20px 20px;
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer;
+  box-shadow: 0 0 40px rgba(0,232,122,.25), 0 8px 24px rgba(0,0,0,.4);
+  transition: transform .13s, box-shadow .13s;
+  position: relative; overflow: hidden;
+}
+.main-cta::before {
+  content: '';
+  position: absolute; top: -30px; right: -20px;
+  width: 100px; height: 100px; border-radius: 50%;
+  background: rgba(255,255,255,.12);
+}
+.main-cta:active { transform: scale(.97); box-shadow: 0 0 20px rgba(0,232,122,.15); }
+.mcta-left {}
+.mcta-label {
+  font-size: 11px; font-weight: 700; letter-spacing: .1em;
+  color: rgba(0,0,0,.55); margin-bottom: 4px;
+}
+.mcta-title { font-size: 22px; font-weight: 800; color: #000; line-height: 1; }
+.mcta-sub { font-size: 12px; color: rgba(0,0,0,.55); margin-top: 3px; }
+.mcta-right {
+  width: 52px; height: 52px; border-radius: 14px;
+  background: rgba(0,0,0,.15);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; flex-shrink: 0;
+}
+
+/* ━━ PRICE STRIP ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.price-strip {
+  margin-top: 10px;
+  background: var(--card);
+  border: 1px solid var(--rim);
+  border-radius: 16px;
+  padding: 14px 16px;
+  display: flex; align-items: center; gap: 14px;
+}
+.ps-price {
+  font-size: 32px; font-weight: 800; color: var(--white);
+  font-variant-numeric: tabular-nums; line-height: 1; flex-shrink: 0;
+}
+.ps-unit { font-size: 11px; color: var(--mid); margin-top: 2px; }
+.ps-div { width: 1px; height: 36px; background: var(--rim); flex-shrink: 0; }
+.ps-features { flex: 1; display: flex; flex-direction: column; gap: 5px; }
+.ps-feat {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 12px; color: var(--mid);
+}
+.ps-feat-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+
+/* ━━ SECTION LABEL ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.slabel {
+  font-size: 11px; font-weight: 700; color: var(--mid);
+  letter-spacing: .1em; padding: 18px 0 10px;
+}
+
+/* ━━ SEAT PANEL ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.seat-panel {
+  background: var(--card);
+  border: 1px solid var(--rim);
+  border-radius: 16px; padding: 14px;
+}
+.sp-header {
+  display: flex; align-items: baseline; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.sp-count {
+  font-size: 20px; font-weight: 800;
+}
+.sp-count em { color: var(--green); font-style: normal; }
+.sp-total { font-size: 11px; color: var(--mid); }
+.seat-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px; }
+.seat {
+  aspect-ratio: 1; border-radius: 12px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 3px;
+  cursor: pointer; transition: transform .12s;
+  border: 1px solid transparent;
+  position: relative;
+}
+.seat:active { transform: scale(.88); }
+
+.seat.open   { background: rgba(0,232,122,.07);   border-color: rgba(0,232,122,.2); }
+.seat.taken  { background: rgba(255,77,94,.07);    border-color: rgba(255,77,94,.2); }
+.seat.prayer { background: rgba(77,184,255,.07);   border-color: rgba(77,184,255,.2); }
+
+.seat-ico { font-size: 17px; }
+.seat-n {
+  font-size: 8px; font-weight: 700;
+  font-family: 'DM Mono', monospace;
+}
+.open   .seat-n { color: var(--green); }
+.taken  .seat-n { color: var(--red); }
+.prayer .seat-n { color: var(--blue); }
+
+.seat-legend {
+  display: flex; gap: 14px; margin-top: 10px; flex-wrap: wrap;
+}
+.sl { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--mid); }
+.sl-pip { width: 6px; height: 6px; border-radius: 50%; }
+
+/* ━━ SERVICE CARDS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.svc-scroll {
+  display: flex; gap: 8px;
+  overflow-x: auto; scrollbar-width: none;
+  padding-bottom: 4px;
+}
+.svc-scroll::-webkit-scrollbar { display: none; }
+.svc-card {
+  flex-shrink: 0; min-width: 100px;
+  background: var(--card);
+  border: 1px solid var(--rim);
+  border-radius: 14px; padding: 13px 12px;
+  display: flex; flex-direction: column; gap: 6px;
+  cursor: pointer; transition: border-color .2s, transform .12s;
+}
+.svc-card:hover { border-color: var(--dim); }
+.svc-card:active { transform: scale(.95); }
+.svc-ico { font-size: 24px; }
+.svc-name { font-size: 12px; font-weight: 700; }
+.svc-tag {
+  display: inline-block;
+  font-size: 9px; font-weight: 800;
+  padding: 2px 8px; border-radius: 100px;
+  letter-spacing: .05em;
+}
+.tag-free { background: rgba(0,232,122,.12); color: var(--green); }
+.tag-paid { background: rgba(255,179,64,.12); color: var(--amber); }
+
+/* ━━ PRAYER CARD ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.prayer-card {
+  background: linear-gradient(135deg, #0c1626, #101e38);
+  border: 1px solid #1a3060;
+  border-radius: 16px; padding: 16px;
+  display: flex; align-items: center; gap: 14px;
+  margin-top: 10px;
+}
+.pc-ico {
+  width: 46px; height: 46px; border-radius: 13px;
+  background: rgba(77,184,255,.1);
+  border: 1px solid rgba(77,184,255,.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; flex-shrink: 0;
+}
+.pc-body { flex: 1; }
+.pc-title { font-size: 14px; font-weight: 700; }
+.pc-sub { font-size: 11px; color: var(--mid); margin-top: 3px; line-height: 1.5; }
+.pc-badge {
+  background: rgba(77,184,255,.12);
+  border: 1px solid rgba(77,184,255,.25);
+  color: var(--blue);
+  font-size: 10px; font-weight: 700;
+  padding: 5px 11px; border-radius: 100px;
+  flex-shrink: 0;
+}
+
+/* ━━ CHECK-IN SCREEN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.ci-wrap { padding: 16px 0; }
+
+.qr-card {
+  background: var(--card);
+  border: 1px solid var(--rim);
+  border-radius: 20px; padding: 28px 20px;
+  text-align: center;
+}
+.qr-label {
+  font-size: 10px; font-weight: 700; letter-spacing: .15em;
+  color: var(--mid); margin-bottom: 24px;
+}
+.qr-frame {
+  width: 164px; height: 164px; margin: 0 auto 20px;
+  background: #fff; border-radius: 18px; padding: 14px;
+  position: relative;
+  box-shadow: 0 0 40px rgba(0,232,122,.12);
+}
+.qr-dots {
+  width: 100%; height: 100%;
+  background-image: radial-gradient(#111 1.5px, transparent 1.5px);
+  background-size: 8px 8px; opacity: .1;
+}
+.qr-corner {
+  position: absolute; width: 26px; height: 26px;
+  border: 4px solid #111;
+}
+.qr-corner.tl { top:12px;left:12px; border-right:none;border-bottom:none;border-radius:3px 0 0 0 }
+.qr-corner.tr { top:12px;right:12px; border-left:none;border-bottom:none;border-radius:0 3px 0 0 }
+.qr-corner.bl { bottom:12px;left:12px; border-right:none;border-top:none;border-radius:0 0 0 3px }
+.qr-center { position:absolute;inset:calc(50% - 14px);width:28px;height:28px;background:#111;border-radius:4px; }
+
+.qr-hint { font-size: 13px; color: var(--mid); margin-bottom: 20px; }
+
+.cta-btn {
+  width: 100%; padding: 17px;
+  background: var(--green); color: #000;
+  border: none; border-radius: 14px;
+  font-size: 16px; font-weight: 800;
+  cursor: pointer; font-family: inherit;
+  letter-spacing: -.2px;
+  box-shadow: 0 0 32px rgba(0,232,122,.3), 0 4px 16px rgba(0,0,0,.4);
+  transition: transform .12s, box-shadow .12s;
+}
+.cta-btn:active { transform: scale(.97); box-shadow: 0 0 16px rgba(0,232,122,.2); }
+
+/* Timer */
+.timer-card {
+  background: var(--card); border: 1px solid var(--rim);
+  border-radius: 20px; padding: 24px 20px;
+  display: none;
+}
+.timer-card.show { display: block; }
+.timer-label {
+  font-size: 10px; font-weight: 700; letter-spacing: .15em;
+  color: var(--green); margin-bottom: 6px;
+}
+.timer-display {
+  font-size: 60px; font-weight: 800; letter-spacing: -3px;
+  font-variant-numeric: tabular-nums; line-height: 1;
+  font-family: 'DM Mono', monospace;
+}
+.timer-bar-bg { height: 3px; background: var(--rim); border-radius: 2px; margin: 16px 0 6px; }
+.timer-bar-fill {
+  height: 100%; border-radius: 2px;
+  background: linear-gradient(90deg, var(--green), #a0ffd8);
+  transition: width 1s linear;
+}
+.timer-seat { font-size: 12px; color: var(--mid); margin-bottom: 16px; }
+.btn-pair { display: flex; gap: 8px; }
+.btn-out {
+  flex: 1; padding: 14px;
+  background: var(--card2); border: 1px solid var(--rim);
+  color: var(--white); border-radius: 13px;
+  font-size: 14px; font-weight: 700;
+  cursor: pointer; font-family: inherit;
+  transition: border-color .2s;
+}
+.btn-out:hover { border-color: var(--dim); }
+.btn-ext {
+  flex: 1; padding: 14px;
+  background: var(--green); color: #000;
+  border: none; border-radius: 13px;
+  font-size: 14px; font-weight: 800;
+  cursor: pointer; font-family: inherit;
+}
+
+/* ━━ INFO SCREEN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.info-card {
+  background: var(--card); border: 1px solid var(--rim);
+  border-radius: 16px; overflow: hidden; margin-bottom: 10px;
+}
+.info-row {
+  display: flex; align-items: center; gap: 13px;
+  padding: 13px 14px;
+  border-bottom: 1px solid var(--rim);
+}
+.info-row:last-child { border-bottom: none; }
+.ir-ico {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: var(--card2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px; flex-shrink: 0;
+}
+.ir-main { font-size: 13px; font-weight: 600; }
+.ir-sub { font-size: 11px; color: var(--mid); margin-top: 2px; }
+
+/* ━━ NAV ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.nav {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
+  background: rgba(13,15,18,.96);
+  backdrop-filter: blur(16px);
+  border-top: 1px solid var(--rim);
+  display: flex; padding: 6px 0 10px;
+}
+.navbtn {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; gap: 4px;
+  font-size: 9px; font-weight: 700; letter-spacing: .04em;
+  color: var(--dim); background: none; border: none;
+  cursor: pointer; font-family: inherit;
+  transition: color .2s; padding: 4px 0;
+}
+.navbtn.on { color: var(--green); }
+.navico { font-size: 21px; line-height: 1; }
+
+/* ━━ SCREEN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.screen { display: none; }
+.screen.on { display: block; }
+
+/* ━━ RTL ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+[dir=rtl] .price-strip { flex-direction: row-reverse; }
+[dir=rtl] .main-cta   { flex-direction: row-reverse; }
+[dir=rtl] .prayer-card{ flex-direction: row-reverse; }
+[dir=rtl] .btn-pair   { flex-direction: row-reverse; }
+[dir=rtl] .info-row   { flex-direction: row-reverse; }
+</style>
+</head>
+<body>
+
+<!-- LANG STRIP -->
+<div class="lang-strip" role="tablist" aria-label="Language">
+  <button class="lb on" onclick="lang('en',this)">🇬🇧 EN</button>
+  <button class="lb"    onclick="lang('ja',this)">🇯🇵 日本語</button>
+  <button class="lb"    onclick="lang('ms',this)">🇲🇾 BM</button>
+  <button class="lb"    onclick="lang('zh',this)">🇨🇳 中文</button>
+  <button class="lb"    onclick="lang('ar',this)">🇸🇦 عربي</button>
+</div>
+
+<!-- HERO -->
+<div class="hero" aria-hidden="true">
+  <div class="sky"></div>
+  <div class="stars" id="stars"></div>
+  <!-- Skyline buildings -->
+  <div class="skyline" id="skyline"></div>
+  <div class="beacon">
+    <div class="beacon-ring"></div>
+    <div class="beacon-ring"></div>
+    <div class="beacon-ring"></div>
+    <div class="beacon-dot"></div>
+  </div>
+  <div class="hero-grad"></div>
+  <div class="hero-content">
+    <div class="hero-tag">
+      <div class="htag-dot"></div>
+      <span id="hTag">Open · 8 seats available</span>
+    </div>
+    <div class="hero-title" id="hTitle">Your <span>sanctuary</span><br>in Kuala Lumpur</div>
+    <div class="hero-subtitle" id="hSub">Bukit Bintang · 5 min from MRT</div>
+  </div>
+</div>
+
+<!-- BODY -->
+<div class="body">
+
+  <!-- ═══ HOME ═══ -->
+  <div id="sc-home" class="screen on">
+
+    <button class="main-cta" onclick="goTo('checkin')" id="ctaBtn">
+      <div class="mcta-left">
+        <div class="mcta-label" id="ctaLabel">QUICK ACCESS</div>
+        <div class="mcta-title" id="ctaTitle">Check In Now</div>
+        <div class="mcta-sub" id="ctaSub">Scan QR · Pay · Relax</div>
+      </div>
+      <div class="mcta-right">📲</div>
+    </button>
+
+    <div class="price-strip">
+      <div>
+        <div class="ps-price" id="pNum">RM 9</div>
+        <div class="ps-unit" id="pUnit">/ 3 hours</div>
+      </div>
+      <div class="ps-div"></div>
+      <div class="ps-features">
+        <div class="ps-feat"><div class="ps-feat-dot"></div><span id="pf1">Reclining chair · Wi-Fi</span></div>
+        <div class="ps-feat"><div class="ps-feat-dot"></div><span id="pf2">Hot drinks unlimited</span></div>
+        <div class="ps-feat"><div class="ps-feat-dot"></div><span id="pf3">Charging · Prayer room</span></div>
+      </div>
+    </div>
+
+    <div class="slabel" id="lblSeats">SEAT AVAILABILITY</div>
+    <div class="seat-panel">
+      <div class="sp-header">
+        <div class="sp-count"><em id="openCount">8</em> <span id="lblOpen">available</span></div>
+        <div class="sp-total" id="lblTotal">10 seats total</div>
+      </div>
+      <div class="seat-grid" id="seatGrid"></div>
+      <div class="seat-legend">
+        <div class="sl"><div class="sl-pip" style="background:var(--green)"></div><span id="sOpen">Available</span></div>
+        <div class="sl"><div class="sl-pip" style="background:var(--red)"></div><span id="sTaken">In use</span></div>
+        <div class="sl"><div class="sl-pip" style="background:var(--blue)"></div><span id="sPrayer">Prayer</span></div>
+      </div>
+    </div>
+
+    <div class="slabel" id="lblSvc">SERVICES</div>
+    <div class="svc-scroll">
+      <div class="svc-card"><div class="svc-ico">☕</div><div class="svc-name" id="s1n">Hot Drinks</div><div class="svc-tag tag-free" id="s1t">FREE</div></div>
+      <div class="svc-card"><div class="svc-ico">🔋</div><div class="svc-name" id="s2n">Charging</div><div class="svc-tag tag-free" id="s2t">FREE</div></div>
+      <div class="svc-card"><div class="svc-ico">🛒</div><div class="svc-name" id="s3n">Shop</div><div class="svc-tag tag-paid" id="s3t">PAID</div></div>
+      <div class="svc-card"><div class="svc-ico">🧴</div><div class="svc-name" id="s4n">Hygiene</div><div class="svc-tag tag-paid" id="s4t">PAID</div></div>
+      <div class="svc-card"><div class="svc-ico">👶</div><div class="svc-name" id="s5n">Baby Room</div><div class="svc-tag tag-free" id="s5t">FREE</div></div>
+    </div>
+
+    <div class="prayer-card">
+      <div class="pc-ico">🕌</div>
+      <div class="pc-body">
+        <div class="pc-title" id="pTitle">Prayer Room — Surau</div>
+        <div class="pc-sub" id="pSub">Prayer mat · Wudu area · Qibla 292° NW</div>
+      </div>
+      <div class="pc-badge" id="pBadge">OPEN</div>
+    </div>
+
+    <div style="height:6px"></div>
+  </div>
+
+  <!-- ═══ CHECK-IN ═══ -->
+  <div id="sc-checkin" class="screen">
+    <div class="ci-wrap">
+
+      <div class="timer-card" id="timerCard">
+        <div class="timer-label" id="tLbl">SESSION ACTIVE</div>
+        <div class="timer-display" id="timerNum">2:58:44</div>
+        <div class="timer-bar-bg"><div class="timer-bar-fill" id="tBar" style="width:65%"></div></div>
+        <div class="timer-seat" id="tSeat">Seat #4 · Bukit Bintang</div>
+        <div class="btn-pair">
+          <button class="btn-out" id="btnOut">Check Out</button>
+          <button class="btn-ext" id="btnExt">+1 Hour</button>
+        </div>
+      </div>
+
+      <div class="qr-card" id="qrCard">
+        <div class="qr-label" id="qrLbl">SCAN TO CHECK IN</div>
+        <div class="qr-frame">
+          <div class="qr-dots"></div>
+          <div class="qr-corner tl"></div>
+          <div class="qr-corner tr"></div>
+          <div class="qr-corner bl"></div>
+          <div class="qr-center"></div>
+        </div>
+        <div class="qr-hint" id="qrHint">Show this code at the entrance terminal</div>
+        <button class="cta-btn" id="btnCI" onclick="startSession()">📲 CHECK IN NOW</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══ INFO ═══ -->
+  <div id="sc-info" class="screen">
+    <div class="slabel" id="lblRules">HOUSE RULES</div>
+    <div class="info-card" id="rulesList"></div>
+    <div class="slabel" id="lblLoc">LOCATION & HOURS</div>
+    <div class="info-card">
+      <div class="info-row">
+        <div class="ir-ico">🕐</div>
+        <div><div class="ir-main" id="h1">Open 24 hours, 7 days</div><div class="ir-sub" id="h1s">No closing time</div></div>
+      </div>
+      <div class="info-row">
+        <div class="ir-ico">📍</div>
+        <div><div class="ir-main">Bukit Bintang, Kuala Lumpur</div><div class="ir-sub" id="h2s">5 min walk from MRT station</div></div>
+      </div>
+      <div class="info-row">
+        <div class="ir-ico">💬</div>
+        <div><div class="ir-main">WhatsApp</div><div class="ir-sub">+60 12-XXX-XXXX</div></div>
+      </div>
+    </div>
+    <div style="height:6px"></div>
+  </div>
+
+</div>
+
+<!-- NAV -->
+<nav class="nav">
+  <button class="navbtn on" id="nb-home"    onclick="goTo('home')">   <div class="navico">🏠</div><span id="nb1">Home</span></button>
+  <button class="navbtn"    id="nb-checkin" onclick="goTo('checkin')"><div class="navico">📲</div><span id="nb2">Check In</span></button>
+  <button class="navbtn"    id="nb-info"    onclick="goTo('info')">   <div class="navico">ℹ️</div><span id="nb3">Info</span></button>
+</nav>
+
+<script>
+/* ── STARS ─────────────────────────────── */
+const starsEl = document.getElementById('stars');
+for(let i=0;i<40;i++){
+  const s=document.createElement('div');
+  s.className='star';
+  const sz=Math.random()*1.5+.5;
+  s.style.cssText=`width:${sz}px;height:${sz}px;top:${Math.random()*55}%;left:${Math.random()*100}%;--d:${(Math.random()*3+2).toFixed(1)}s;animation-delay:${(Math.random()*3).toFixed(1)}s`;
+  starsEl.appendChild(s);
+}
+
+/* ── SKYLINE ────────────────────────────── */
+const skyEl = document.getElementById('skyline');
+const bldgs = [50,80,60,100,70,55,90,65,75,110,50,85,60,95,70,55,80,65,45,75,90,60,100];
+bldgs.forEach(h=>{
+  const b=document.createElement('div');
+  b.className='bld';
+  const w=Math.random()*14+10;
+  b.style.cssText=`width:${w}px;height:${h}px`;
+  skyEl.appendChild(b);
+});
+
+/* ── SEATS ──────────────────────────────── */
+const seatData=[{t:'open'},{t:'taken'},{t:'open'},{t:'taken'},{t:'prayer'},{t:'taken'},{t:'open'},{t:'taken'},{t:'open'},{t:'open'}];
+const sIco={open:'🪑',taken:'🔴',prayer:'🕌'};
+function buildSeats(){
+  document.getElementById('seatGrid').innerHTML=seatData.map((s,i)=>
+    `<div class="seat ${s.t}" onclick="toast('${i+1}番席')">
+      <div class="seat-ico">${sIco[s.t]||'🧹'}</div>
+      <div class="seat-n">${i+1}</div>
+    </div>`
+  ).join('');
+}
+buildSeats();
+
+/* ── TRANSLATIONS ───────────────────────── */
+const T={
+  en:{dir:'ltr',
+    hTag:'Open · 8 seats available',hTitle:'Your <span>sanctuary</span><br>in Kuala Lumpur',hSub:'Bukit Bintang · 5 min from MRT',
+    ctaLabel:'QUICK ACCESS',ctaTitle:'Check In Now',ctaSub:'Scan QR · Pay · Relax',
+    pNum:'RM 9',pUnit:'/ 3 hours',pf1:'Reclining chair · Wi-Fi',pf2:'Hot drinks unlimited',pf3:'Charging · Prayer room',
+    lblSeats:'SEAT AVAILABILITY',openCount:'8',lblOpen:'available',lblTotal:'10 seats total',
+    sOpen:'Available',sTaken:'In use',sPrayer:'Prayer',
+    lblSvc:'SERVICES',
+    s1n:'Hot Drinks',s1t:'FREE',s2n:'Charging',s2t:'FREE',s3n:'Shop',s3t:'PAID',s4n:'Hygiene',s4t:'PAID',s5n:'Baby Room',s5t:'FREE',
+    pTitle:'Prayer Room — Surau',pSub:'Prayer mat · Wudu area · Qibla 292° NW',pBadge:'OPEN',
+    tLbl:'SESSION ACTIVE',tSeat:'Seat #4 · Bukit Bintang',btnOut:'Check Out',btnExt:'+1 Hour',
+    qrLbl:'SCAN TO CHECK IN',qrHint:'Show this code at the entrance terminal',btnCI:'📲 CHECK IN NOW',
+    lblRules:'HOUSE RULES',lblLoc:'LOCATION & HOURS',
+    h1:'Open 24 hours, 7 days',h1s:'No closing time',h2s:'5 min walk from MRT station',
+    nb1:'Home',nb2:'Check In',nb3:'Info',
+    rules:[['🚭','No Smoking','No alcohol on premises'],['📵','Silent Mode','Respect other guests'],['🥡','Outside Food OK','No strong smells please'],['🙏','Prayer Room','No phone calls inside'],['♻️','Rubbish','Use bins provided']]},
+  ja:{dir:'ltr',
+    hTag:'営業中 · 8席空きあり',hTitle:'クアラルンプールの<br><span>くつろぎの空間</span>',hSub:'ブキッビンタン · MRT徒歩5分',
+    ctaLabel:'クイックアクセス',ctaTitle:'今すぐチェックイン',ctaSub:'QRスキャン · 決済 · リラックス',
+    pNum:'RM 9',pUnit:'/ 3時間',pf1:'リクライニングチェア · Wi-Fi',pf2:'ホットドリンク飲み放題',pf3:'充電 · 礼拝室',
+    lblSeats:'座席の空き状況',openCount:'8',lblOpen:'席空きあり',lblTotal:'合計10席',
+    sOpen:'空き',sTaken:'使用中',sPrayer:'礼拝',
+    lblSvc:'サービス',
+    s1n:'ホットドリンク',s1t:'無料',s2n:'充電',s2t:'無料',s3n:'売店',s3t:'有料',s4n:'衛生用品',s4t:'有料',s5n:'ベビールーム',s5t:'無料',
+    pTitle:'礼拝室（スラウ）',pSub:'礼拝マット · ウドゥーエリア · キブラ方向 292° 北西',pBadge:'利用可能',
+    tLbl:'利用中',tSeat:'席 #4 · ブキッビンタン',btnOut:'チェックアウト',btnExt:'+1時間延長',
+    qrLbl:'QRコードでチェックイン',qrHint:'入口の端末でこのコードを見せてください',btnCI:'📲 チェックインする',
+    lblRules:'ご利用ルール',lblLoc:'アクセス・営業時間',
+    h1:'24時間 年中無休',h1s:'いつでもご利用いただけます',h2s:'MRT駅より徒歩5分',
+    nb1:'ホーム',nb2:'チェックイン',nb3:'案内',
+    rules:[['🚭','禁煙','アルコール持込禁止'],['📵','マナーモード','他のお客様への配慮をお願いします'],['🥡','外食持込OK','においの強いものはご遠慮ください'],['🙏','礼拝室','室内での電話はご遠慮ください'],['♻️','ゴミ','所定のゴミ箱をご利用ください']]},
+  ms:{dir:'ltr',
+    hTag:'Buka · 8 tempat tersedia',hTitle:'Tempat <span>rehat</span> anda<br>di Kuala Lumpur',hSub:'Bukit Bintang · 5 min dari MRT',
+    ctaLabel:'AKSES PANTAS',ctaTitle:'Daftar Masuk Sekarang',ctaSub:'Imbas QR · Bayar · Berehat',
+    pNum:'RM 9',pUnit:'/ 3 jam',pf1:'Kerusi reclining · Wi-Fi',pf2:'Minuman panas tanpa had',pf3:'Pengecasan · Surau',
+    lblSeats:'KETERSEDIAAN TEMPAT',openCount:'8',lblOpen:'tempat tersedia',lblTotal:'10 tempat duduk',
+    sOpen:'Kosong',sTaken:'Digunakan',sPrayer:'Surau',
+    lblSvc:'PERKHIDMATAN',
+    s1n:'Minuman Panas',s1t:'PERCUMA',s2n:'Pengecasan',s2t:'PERCUMA',s3n:'Kedai',s3t:'BERBAYAR',s4n:'Kebersihan',s4t:'BERBAYAR',s5n:'Bilik Bayi',s5t:'PERCUMA',
+    pTitle:'Surau',pSub:'Sejadah · Kawasan wudu · Kiblat 292° Barat Laut',pBadge:'TERSEDIA',
+    tLbl:'SESI AKTIF',tSeat:'Tempat #4 · Bukit Bintang',btnOut:'Daftar Keluar',btnExt:'+1 Jam',
+    qrLbl:'IMBAS UNTUK DAFTAR MASUK',qrHint:'Tunjukkan kod ini di terminal pintu masuk',btnCI:'📲 DAFTAR MASUK SEKARANG',
+    lblRules:'PERATURAN',lblLoc:'LOKASI & WAKTU',
+    h1:'Buka 24 jam, 7 hari',h1s:'Tiada waktu tutup',h2s:'5 min jalan dari stesen MRT',
+    nb1:'Utama',nb2:'Daftar Masuk',nb3:'Maklumat',
+    rules:[['🚭','Larangan Merokok','Tiada alkohol'],['📵','Mod Senyap','Hormati tetamu lain'],['🥡','Makanan Luar OK','Tiada bau kuat'],['🙏','Surau','Tiada panggilan telefon di dalam'],['♻️','Sampah','Guna tong sampah yang disediakan']]},
+  zh:{dir:'ltr',
+    hTag:'营业中 · 8个座位可用',hTitle:'您在吉隆坡的<br><span>宁静之所</span>',hSub:'武吉免登 · 距MRT步行5分钟',
+    ctaLabel:'快速入住',ctaTitle:'立即入住',ctaSub:'扫码 · 付款 · 放松',
+    pNum:'RM 9',pUnit:'/ 3小时',pf1:'躺椅 · Wi-Fi',pf2:'热饮无限畅饮',pf3:'充电 · 祈祷室',
+    lblSeats:'座位空余情况',openCount:'8',lblOpen:'个座位可用',lblTotal:'共10个座位',
+    sOpen:'可用',sTaken:'使用中',sPrayer:'祈祷',
+    lblSvc:'服务项目',
+    s1n:'热饮',s1t:'免费',s2n:'充电',s2t:'免费',s3n:'小卖部',s3t:'收费',s4n:'卫生用品',s4t:'收费',s5n:'婴儿室',s5t:'免费',
+    pTitle:'穆斯林祈祷室',pSub:'祈祷毯 · 净礼区域 · 朝拜方向 292° 西北',pBadge:'可用',
+    tLbl:'使用中',tSeat:'座位 #4 · 武吉免登',btnOut:'退出',btnExt:'+1小时',
+    qrLbl:'扫码办理入住',qrHint:'在入口处向终端展示此码',btnCI:'📲 立即入住',
+    lblRules:'使用规则',lblLoc:'位置与营业时间',
+    h1:'全天候营业',h1s:'每天开放，全年无休',h2s:'距MRT站步行5分钟',
+    nb1:'首页',nb2:'入住',nb3:'信息',
+    rules:[['🚭','禁止吸烟','禁止饮酒'],['📵','静音模式','请尊重其他客人'],['🥡','允许自带食物','气味不宜过重'],['🙏','祈祷室','禁止在室内打电话'],['♻️','垃圾','请使用垃圾桶']]},
+  ar:{dir:'rtl',
+    hTag:'مفتوح · 8 مقاعد متاحة',hTitle:'ملاذك الهادئ<br>في <span>كوالالمبور</span>',hSub:'بوكيت بينتانج · 5 دقائق من MRT',
+    ctaLabel:'وصول سريع',ctaTitle:'تسجيل الدخول الآن',ctaSub:'امسح QR · ادفع · استرخِ',
+    pNum:'RM 9',pUnit:'/ 3 ساعات',pf1:'كرسي مريح · واي فاي',pf2:'مشروبات ساخنة بلا حدود',pf3:'شحن · مصلى',
+    lblSeats:'توفر المقاعد',openCount:'8',lblOpen:'مقاعد متاحة',lblTotal:'10 مقاعد إجمالاً',
+    sOpen:'متاح',sTaken:'مشغول',sPrayer:'مصلى',
+    lblSvc:'الخدمات',
+    s1n:'مشروبات ساخنة',s1t:'مجاني',s2n:'شحن',s2t:'مجاني',s3n:'متجر',s3t:'مدفوع',s4n:'نظافة',s4t:'مدفوع',s5n:'غرفة الأطفال',s5t:'مجاني',
+    pTitle:'المصلى',pSub:'سجادة الصلاة · منطقة الوضوء · القبلة 292° شمال غرب',pBadge:'متاح',
+    tLbl:'الجلسة نشطة',tSeat:'مقعد #4 · بوكيت بينتانج',btnOut:'تسجيل الخروج',btnExt:'+ساعة',
+    qrLbl:'امسح لتسجيل الدخول',qrHint:'أرِ هذا الرمز عند طرفية المدخل',btnCI:'📲 سجّل الدخول الآن',
+    lblRules:'قواعد الاستخدام',lblLoc:'الموقع والساعات',
+    h1:'مفتوح 24 ساعة 7 أيام',h1s:'لا وقت للإغلاق',h2s:'5 دقائق سيراً من محطة MRT',
+    nb1:'الرئيسية',nb2:'تسجيل الدخول',nb3:'معلومات',
+    rules:[['🚭','ممنوع التدخين','ممنوع الكحول'],['📵','وضع الصمت','احترم الآخرين'],['🥡','الطعام الخارجي مسموح','بدون روائح قوية'],['🙏','المصلى','ممنوع التحدث بالهاتف'],['♻️','النفايات','استخدم سلات المهملات']]}
+};
+
+function lang(l,btn){
+  document.querySelectorAll('.lb').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  const t=T[l];
+  document.body.dir=t.dir;
+  const plain=['hSub','ctaLabel','ctaTitle','ctaSub','pNum','pUnit','pf1','pf2','pf3',
+    'lblSeats','openCount','lblOpen','lblTotal','sOpen','sTaken','sPrayer','lblSvc',
+    's1n','s1t','s2n','s2t','s3n','s3t','s4n','s4t','s5n','s5t',
+    'pTitle','pSub','pBadge','tLbl','tSeat','qrLbl','qrHint',
+    'lblRules','lblLoc','h1','h1s','h2s','nb1','nb2','nb3'];
+  plain.forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=t[id]||'';});
+  ['hTitle','hTag'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=t[id]||'';});
+  document.getElementById('btnCI').textContent=t.btnCI;
+  document.getElementById('btnOut').textContent=t.btnOut;
+  document.getElementById('btnExt').textContent=t.btnExt;
+  document.getElementById('rulesList').innerHTML=t.rules.map(([ico,main,sub])=>
+    `<div class="info-row"><div class="ir-ico">${ico}</div><div><div class="ir-main">${main}</div><div class="ir-sub">${sub}</div></div></div>`
+  ).join('');
+}
+
+// Init rules
+document.getElementById('rulesList').innerHTML=T.en.rules.map(([ico,main,sub])=>
+  `<div class="info-row"><div class="ir-ico">${ico}</div><div><div class="ir-main">${main}</div><div class="ir-sub">${sub}</div></div></div>`
+).join('');
+
+/* ── SESSION ─────────────────────────── */
+let secs=10724,tmr;
+function startSession(){
+  document.getElementById('qrCard').style.display='none';
+  document.getElementById('timerCard').classList.add('show');
+  if(tmr)clearInterval(tmr);
+  tmr=setInterval(()=>{
+    if(secs>0)secs--;
+    const h=Math.floor(secs/3600),m=Math.floor((secs%3600)/60),s=secs%60;
+    document.getElementById('timerNum').textContent=`${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    document.getElementById('tBar').style.width=(secs/10800*100)+'%';
+  },1000);
+}
+
+/* ── NAVIGATION ─────────────────────── */
+function goTo(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.navbtn').forEach(b=>b.classList.remove('on'));
+  document.getElementById('sc-'+name).classList.add('on');
+  document.getElementById('nb-'+name).classList.add('on');
+}
+
+/* ── TOAST ──────────────────────────── */
+let toastTimer;
+function toast(msg){
+  let el=document.getElementById('_toast');
+  if(!el){
+    el=document.createElement('div');
+    el.id='_toast';
+    el.style.cssText='position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#1a1e25;border:1px solid #2a2830;color:#f0f2f5;font-size:13px;font-weight:600;padding:10px 20px;border-radius:100px;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap;z-index:999;font-family:DM Sans,sans-serif';
+    document.body.appendChild(el);
+  }
+  el.textContent=msg;el.style.opacity='1';
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>{el.style.opacity='0';},2000);
+}
+</script>
+</body>
+</html>
