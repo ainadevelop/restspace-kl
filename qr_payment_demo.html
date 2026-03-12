@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>REST SPACE — Payment Demo QR</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+body{font-family:'Helvetica Neue',sans-serif;background:#f5f5f7;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0}
+.card{background:#fff;border-radius:24px;padding:32px 28px;text-align:center;box-shadow:0 4px 32px rgba(0,0,0,.08);max-width:320px;width:100%}
+.badge{background:#FF9F0A15;border:1px solid #FF9F0A40;border-radius:8px;padding:5px 12px;display:inline-block;font-size:11px;font-weight:700;color:#FF9F0A;margin-bottom:16px;letter-spacing:.05em}
+h2{font-size:20px;font-weight:800;color:#1d1d1f;margin:0 0 4px}
+p{font-size:13px;color:#86868b;margin:0 0 20px}
+#qr{display:flex;justify-content:center;margin:0 0 20px}
+#qr img,#qr canvas{border-radius:12px}
+.url{background:#f0f0f2;border-radius:10px;padding:10px 14px;font-size:10px;color:#3a3a3c;word-break:break-all;font-family:monospace;margin-bottom:16px;text-align:left}
+.steps{text-align:left;background:#f0f7ff;border-radius:12px;padding:12px 14px;margin-bottom:16px}
+.step{font-size:11px;color:#1d1d1f;padding:3px 0}
+.note{font-size:11px;color:#c7c7cc}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="badge">🧪 DEMO MODE</div>
+  <h2>💳 決済デモ</h2>
+  <p>REST SPACE KL — Payment UI</p>
+  <div id="qr"></div>
+  <div class="url">ainadevelop.github.io/restspace-kl/payment.html</div>
+  <div class="steps">
+    <div class="step">① QRスキャン → 決済画面へ</div>
+    <div class="step">② 「✨ Fill test card」をタップ</div>
+    <div class="step">③ 「Pay RM 9」→ 処理アニメーション</div>
+    <div class="step">④ ✅ 完了・予約ID発行</div>
+  </div>
+  <div class="note">⚠️ デモ — 実際の課金なし</div>
+</div>
+<script>
+new QRCode(document.getElementById('qr'), {
+  text: 'https://ainadevelop.github.io/restspace-kl/payment.html?plan=Standard+%C2%B7+3h&date=Today&time=10%3A00&seat=3&price=9&lang=en',
+  width: 200, height: 200,
+  colorDark: '#1d1d1f', colorLight: '#ffffff',
+  correctLevel: QRCode.CorrectLevel.M
+});
+</script>
+</body>
+</html>
